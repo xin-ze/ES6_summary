@@ -49,13 +49,28 @@ a // ReferenceError: a is not defined.
 b // 1
 ```
 
-它的用法类似于var，但是所声明的变量，只在let命令所在的代码块内有效。\`\`` javascript console.log(foo); // 输出undefined console.log(bar); // 报错ReferenceError
+它的用法类似于var，但是所声明的变量，只在let命令所在的代码块内有效
 
-var foo = 2; let bar = 2;`
+```javascript
+console.log(foo); // 输出undefined
+console.log(bar); // 报错ReferenceError
+
+var foo = 2;
+let bar = 2;
+```
+
 不存在变量提升(变量一定要在声明后使用)
-` var tmp = 123;
 
-if (true) { tmp = 'abc'; // ReferenceError let tmp; }\`\`\` 暂时性死区(temporal dead zone，简称TDZ) ES6明确规定，如果区块中存在let和const命令，这个区块对这些命令声明的变量，从一开始就形成了封闭作用域。凡是在声明之前就使用这些变量，就会报错。
+```javascript
+var tmp = 123;
+
+if (true) {
+    tmp = 'abc'; // ReferenceError
+    let tmp;
+}
+```
+
+暂时性死区(temporal dead zone，简称TDZ) ES6明确规定，如果区块中存在let和const命令，这个区块对这些命令声明的变量，从一开始就形成了封闭作用域。凡是在声明之前就使用这些变量，就会报错。
 
 ```javascript
 // 第一种场景，内层变量可能会覆盖外层变量。
@@ -79,7 +94,9 @@ for (var i = 0; i < s.length; i++) {
 console.log(i); // 5
 ```
 
-为什么需要块级作用域？ ES5只有全局作用域和函数作用域，没有块级作用域，这带来很多不合理的场景。`javascript
+为什么需要块级作用域？ ES5只有全局作用域和函数作用域，没有块级作用域，这带来很多不合理的场景。
+
+```javascript
 function f1() {
   let n = 5;
   if (true) {
@@ -87,35 +104,68 @@ function f1() {
   }
   console.log(n); // 5
 }
-` let实际上为JavaScript新增了块级作用域。 内层作用域可以定义外层作用域的同名变量。\`\``javascript // IIFE 写法 (function () { var tmp = ...; ... }());
+```
 
-// 块级作用域写法 { let tmp = ...; ... }`
+let实际上为JavaScript新增了块级作用域。 内层作用域可以定义外层作用域的同名变量。
+
+```javascript
+// IIFE 写法 (function () { var tmp = ...; ... }());
+
+// 块级作用域写法 { let tmp = ...; ... }
+```
+
 块级作用域的出现，实际上使得获得广泛应用的立即执行函数表达式（IIFE）不再必要了。
-` javascript const PI = 3.1415; PI // 3.1415
 
-PI = 3; // TypeError: Assignment to constant variable. const foo; // SyntaxError: Missing initializer in const declaration`
+```javascript
+const PI = 3.1415; PI // 3.1415
+
+PI = 3; // TypeError: Assignment to constant variable. const foo; // SyntaxError: Missing initializer in const declaration
+```
+
 对于const来说，只声明不赋值，就会报错。
-`javascript if (true) { const MAX = 5; }
+
+```javascript
+if (true) { const MAX = 5; }
 
 MAX // Uncaught ReferenceError: MAX is not defined`
 const的作用域与let命令相同：只在声明所在的块级作用域内有效
-`javascript if (true) { console.log(MAX); // ReferenceError const MAX = 5; }`
+`javascript
+if (true) { console.log(MAX); // ReferenceError const MAX = 5; }
+```
+
 const命令声明的常量也是不提升，同样存在暂时性死区，只能在声明的位置后面使用。
-`javascript const foo = {}; foo.prop = 123;
+
+```javascript
+const foo = {}; foo.prop = 123;
 
 foo.prop // 123
 
-foo = {}; // TypeError: "foo" is read-only`
+foo = {}; // TypeError: "foo" is read-only
+```
+
 对于复合类型的变量，变量名不指向数据，而是指向数据所在的地址。const命令只是保证变量名指向的地址不变，并不保证该地址的数据不变.
-`javascript const foo = Object.freeze({});
 
-// 常规模式时，下面一行不起作用； // 严格模式时，该行会报错 foo.prop = 123;`
+```javascript
+const foo = Object.freeze({});
+
+// 常规模式时，下面一行不起作用； // 严格模式时，该行会报错 foo.prop = 123;
+```
+
 如果真的想将对象冻结，应该使用Object.freeze方法。
-`javascript var constantize = (obj) => { Object.freeze(obj); Object.keys(obj).forEach( (key, value) => { if ( typeof obj[key] === 'object' ) { constantize( obj[key] ); } }); };`
-除了将对象本身冻结，对象的属性也应该冻结。下面是一个将对象彻底冻结的函数。
-`javascript var a = 1; // 如果在Node的REPL环境，可以写成global.a // 或者采用通用方法，写成this.a window.a // 1
 
-let b = 1; window.b // undefined\`\`\` ES6为了改变这一点，一方面规定，为了保持兼容性，var命令和function命令声明的全局变量，依旧是顶层对象的属性；另一方面规定，let命令、const命令、class命令声明的全局变量，不属于顶层对象的属性。也就是说，从ES6开始，全局变量将逐步与顶层对象的属性脱钩。
+```javascript
+var constantize = (obj) => { Object.freeze(obj); Object.keys(obj).forEach( (key, value) => { if ( typeof obj[key] === 'object' ) { constantize( obj[key] ); } }); };
+```
+
+除了将对象本身冻结，对象的属性也应该冻结。下面是一个将对象彻底冻结的函数。
+
+```javascript
+var a = 1; // 如果在Node的REPL环境，可以写成global.a // 或者采用通用方法，写成this.a window.a // 1
+
+let b = 1; window.b // undefined
+```
+
+ES6为了改变这一点，一方面规定，为了保持兼容性，var命令和function命令声明的全局变量，依旧是顶层对象的属性；另一方面规定，let命令、const命令、class命令声明的全局变量，不属于顶层对象的属性。也就是说，从ES6开始，全局变量将逐步与顶层对象的属性脱钩。
 
 **总结**：ES5只有两种声明变量的方法：var命令和function命令。ES6除了添加let和const命令，后面章节还会提到，另外两种声明变量的方法：import命令和class命令。所以，ES6一共有6种声明变量的方法。
 
@@ -206,7 +256,5 @@ show(1,2,3)
 ```
 
 扩展运算符 ...
-
----
 
 ---
